@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Jypeli;
 using Jypeli.Assets;
 using Jypeli.Controls;
 using Jypeli.Widgets;
+using Timer = Jypeli.Timer;
 
 namespace game_2;
 
@@ -18,6 +20,7 @@ public class game_2 : PhysicsGame
     private const int RUUDUN_KOKO = 40;
 
     private PlatformCharacter pelaaja1;
+    IntMeter pistelaskuri;
     LaserGun pelaajan1Ase;
     private Image pelaajankuva = LoadImage("pepes.png");
     private Image vihollisenkuva = LoadImage("vihollinen.png");
@@ -26,34 +29,57 @@ public class game_2 : PhysicsGame
     
     public override void Begin()
     {
-        Gravity = new Vector(0, -1000);
+        ClearAll();
+        MultiSelectWindow alkuvalikko = new MultiSelectWindow("Pelin alkuvalikko", "Aloita peli", "Lopeta");
+        
+        alkuvalikko.AddItemHandler(0, AloitaPeli);
+        alkuvalikko.AddItemHandler(1, Exit);
+        Add(alkuvalikko);
+        SetWindowSize(1080, 900, false); 
+        
+    }
 
+    private void AloitaPeli()
+    {
+        LuoPistelaskuri();
         LuoKentta();
         LisaaNappaimet();
-
         Camera.Follow(pelaaja1);
         Camera.ZoomFactor = 1.2;
         Camera.StayInLevel = true;
+        Timer.SingleShot(150,PeliLoppuu);
+        
 
-        MasterVolume = 0.5;
     }
 
+    private void PeliLoppuu()
+    {
+        Label tekstikentta = new Label();
+        tekstikentta.Text="Peli loppui hävisit.";
+        Add(tekstikentta);
+
+        Timer.SingleShot(5,Begin);
+      
+    }
     private void LuoKentta()
     {
         TileMap kentta = TileMap.FromLevelAsset("kentta1.txt");
         kentta.SetTileMethod('#', LisaaTaso);
-        kentta.SetTileMethod('*', Lisaavihollinen);
+        kentta.SetTileMethod('m', Lisaavihollinen);
         kentta.SetTileMethod('N', LisaaPelaaja);
         kentta.Execute(RUUDUN_KOKO, RUUDUN_KOKO);
         Level.CreateBorders();
-        Level.Background.CreateGradient(Color.White, Color.SkyBlue);
+        Level.Background.CreateGradient(Color.MediumBlue, Color.Black);
+        IsFullScreen = true;
+        Gravity = new Vector(0, -1000);
+        MasterVolume = 0.5;
     }
 
     private void LisaaTaso(Vector paikka, double leveys, double korkeus)
     {
         PhysicsObject taso = PhysicsObject.CreateStaticObject(leveys, korkeus);
         taso.Position = paikka;
-        taso.Color = Color.Green;
+        taso.Color = Color.BloodRed;
         Add(taso);
     }
 
@@ -65,6 +91,7 @@ public class game_2 : PhysicsGame
        vihollinen.Image = vihollisenkuva;
         vihollinen.Tag = "vihollinen";
         Add(vihollinen);
+        pistelaskuri.AddValue(1);
     }
 
     private void LisaaPelaaja(Vector paikka, double leveys, double korkeus)
@@ -89,6 +116,7 @@ public class game_2 : PhysicsGame
     {
         ammus.Destroy();
         kohde.Destroy();
+        pistelaskuri.AddValue(-1);
     }
     private void LisaaNappaimet()
     {
@@ -96,16 +124,13 @@ public class game_2 : PhysicsGame
         Keyboard.Listen(Key.F1, ButtonState.Pressed, ShowControlHelp, "Näytä ohjeet");
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
 
-        Keyboard.Listen(Key.Left, ButtonState.Down, Liikuta, "Liikkuu vasemmalle", pelaaja1, -NOPEUS);
-        Keyboard.Listen(Key.Right, ButtonState.Down, Liikuta, "Liikkuu vasemmalle", pelaaja1, NOPEUS);
-        Keyboard.Listen(Key.Up, ButtonState.Pressed, Hyppaa, "Pelaaja hyppää", pelaaja1, HYPPYNOPEUS);
+        Keyboard.Listen(Key.A, ButtonState.Down, Liikuta, "Liikkuu vasemmalle", pelaaja1, -NOPEUS);
+        Keyboard.Listen(Key.D, ButtonState.Down, Liikuta, "Liikkuu vasemmalle", pelaaja1, NOPEUS);
+        Keyboard.Listen(Key.W, ButtonState.Pressed, Hyppaa, "Pelaaja hyppää", pelaaja1, HYPPYNOPEUS);
+        Mouse.Listen(MouseButton.Left, ButtonState.Pressed, AmmuAseella, "Ammu", pelaajan1Ase);
+        
 
-        ControllerOne.Listen(Button.Back, ButtonState.Pressed, Exit, "Poistu pelistä");
-
-        ControllerOne.Listen(Button.DPadLeft, ButtonState.Down, Liikuta, "Pelaaja liikkuu vasemmalle", pelaaja1,
-            -NOPEUS);
-        ControllerOne.Listen(Button.DPadRight, ButtonState.Down, Liikuta, "Pelaaja liikkuu oikealle", pelaaja1, NOPEUS);
-        ControllerOne.Listen(Button.A, ButtonState.Pressed, Hyppaa, "Pelaaja hyppää", pelaaja1, HYPPYNOPEUS);
+        
 
         PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
     }
@@ -136,4 +161,18 @@ public class game_2 : PhysicsGame
             //ammus.MaximumLifetime = TimeSpan.FromSeconds(2.0);
         }
         }
+
+    void LuoPistelaskuri()
+    {
+        pistelaskuri = new IntMeter(0);               
+      
+        Label pistenaytto = new Label(); 
+        pistenaytto.X = Screen.Left + 100;
+        pistenaytto.Y = Screen.Top - 100;
+        pistenaytto.TextColor = Color.Black;
+        pistenaytto.Color = Color.Blue;
+        pistenaytto.Title = "Vihollisia jäljellä.";
+        pistenaytto.BindTo(pistelaskuri);
+        Add(pistenaytto);
     }
+}
