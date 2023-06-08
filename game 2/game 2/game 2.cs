@@ -11,10 +11,6 @@ namespace game_2;
 
 public class game_2 : PhysicsGame
 {
-    
-    
-    
-    
     private const double NOPEUS = 200;
     private const double HYPPYNOPEUS = 750;
     private const int RUUDUN_KOKO = 40;
@@ -24,8 +20,8 @@ public class game_2 : PhysicsGame
     LaserGun pelaajan1Ase;
     private Image pelaajankuva = LoadImage("pepes.png");
     private Image vihollisenkuva = LoadImage("vihollinen.png");
-
-    private SoundEffect maaliAani = LoadSoundEffect("maali.wav");
+    private Image vihollisekuva = LoadImage("vihollinen1.png");
+    private SoundEffect taustamusiikki = LoadSoundEffect()
     
     public override void Begin()
     {
@@ -35,8 +31,7 @@ public class game_2 : PhysicsGame
         alkuvalikko.AddItemHandler(0, AloitaPeli);
         alkuvalikko.AddItemHandler(1, Exit);
         Add(alkuvalikko);
-        SetWindowSize(1080, 900, false); 
-        
+        SetWindowSize(1080, 900, false);
     }
 
     private void AloitaPeli()
@@ -48,8 +43,6 @@ public class game_2 : PhysicsGame
         Camera.ZoomFactor = 1.2;
         Camera.StayInLevel = true;
         Timer.SingleShot(150,PeliLoppuu);
-        
-
     }
 
     private void PeliLoppuu()
@@ -57,13 +50,12 @@ public class game_2 : PhysicsGame
         Label tekstikentta = new Label();
         tekstikentta.Text="Peli loppui hävisit.";
         Add(tekstikentta);
-
         Timer.SingleShot(5,Begin);
-      
     }
     private void LuoKentta()
     {
         TileMap kentta = TileMap.FromLevelAsset("kentta1.txt");
+        kentta.SetTileMethod('n', Lisaaviholline);
         kentta.SetTileMethod('#', LisaaTaso);
         kentta.SetTileMethod('m', Lisaavihollinen);
         kentta.SetTileMethod('N', LisaaPelaaja);
@@ -104,7 +96,6 @@ public class game_2 : PhysicsGame
         Add(pelaaja1);
         pelaajan1Ase = new LaserGun(20, 0);
         pelaajan1Ase.Ammo.Value = 1000;
-
         pelaajan1Ase.FireRate = 5;
         pelaajan1Ase.Position = pelaaja1.Position +new Vector(30,-5);
 
@@ -123,15 +114,10 @@ public class game_2 : PhysicsGame
         Keyboard.Listen(Key.Space, ButtonState.Down, AmmuAseella, "Ammu", pelaajan1Ase);
         Keyboard.Listen(Key.F1, ButtonState.Pressed, ShowControlHelp, "Näytä ohjeet");
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
-
         Keyboard.Listen(Key.A, ButtonState.Down, Liikuta, "Liikkuu vasemmalle", pelaaja1, -NOPEUS);
         Keyboard.Listen(Key.D, ButtonState.Down, Liikuta, "Liikkuu vasemmalle", pelaaja1, NOPEUS);
         Keyboard.Listen(Key.W, ButtonState.Pressed, Hyppaa, "Pelaaja hyppää", pelaaja1, HYPPYNOPEUS);
         Mouse.Listen(MouseButton.Left, ButtonState.Pressed, AmmuAseella, "Ammu", pelaajan1Ase);
-        
-
-        
-
         PhoneBackButton.Listen(ConfirmExit, "Lopeta peli");
     }
 
@@ -164,8 +150,7 @@ public class game_2 : PhysicsGame
 
     void LuoPistelaskuri()
     {
-        pistelaskuri = new IntMeter(0);               
-      
+        pistelaskuri = new IntMeter(0);
         Label pistenaytto = new Label(); 
         pistenaytto.X = Screen.Left + 100;
         pistenaytto.Y = Screen.Top - 100;
@@ -174,5 +159,15 @@ public class game_2 : PhysicsGame
         pistenaytto.Title = "Vihollisia jäljellä.";
         pistenaytto.BindTo(pistelaskuri);
         Add(pistenaytto);
+    }
+    private void Lisaaviholline(Vector paikka, double leveys, double korkeus)
+    {
+        PhysicsObject viholline = PhysicsObject.CreateStaticObject(leveys, korkeus);
+        viholline.IgnoresCollisionResponse = true;
+        viholline.Position = paikka;
+        viholline.Image = vihollisekuva;
+        viholline.Tag = "vihollinen";
+        Add(viholline);
+        pistelaskuri.AddValue(1);
     }
 }

@@ -13,9 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="Content\kentta1.txt">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
         <None Update="Content\maali.wav">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
@@ -23,6 +20,12 @@
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="Content\vihollinen.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\kentta1.txt">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Content\vihollinen1.png">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
