@@ -21,7 +21,8 @@ public class game_2 : PhysicsGame
     private Image pelaajankuva = LoadImage("pepes.png");
     private Image vihollisenkuva = LoadImage("vihollinen.png");
     private Image vihollisekuva = LoadImage("vihollinen1.png");
-    private SoundEffect taustamusiikki = LoadSoundEffect()
+    private SoundEffect taustamusiikki = LoadSoundEffect("Nokia-Arabic.wav");
+  
     
     public override void Begin()
     {
@@ -36,6 +37,7 @@ public class game_2 : PhysicsGame
 
     private void AloitaPeli()
     {
+        taustamusiikki.Play();
         LuoPistelaskuri();
         LuoKentta();
         LisaaNappaimet();
@@ -47,10 +49,11 @@ public class game_2 : PhysicsGame
 
     private void PeliLoppuu()
     {
+        taustamusiikki.Stop();
         Label tekstikentta = new Label();
         tekstikentta.Text="Peli loppui hävisit.";
         Add(tekstikentta);
-        Timer.SingleShot(5,Begin);
+        Timer.SingleShot(2,Begin);
     }
     private void LuoKentta()
     {
@@ -84,8 +87,16 @@ public class game_2 : PhysicsGame
         vihollinen.Tag = "vihollinen";
         Add(vihollinen);
         pistelaskuri.AddValue(1);
+        AddCollisionHandler(vihollinen,Pelaajatormaa);
     }
 
+    private void Pelaajatormaa(PhysicsObject vihollinen, PhysicsObject kohde)
+    {
+        if (kohde == pelaaja1)
+        {
+            PeliLoppuu();
+        }
+    }
     private void LisaaPelaaja(Vector paikka, double leveys, double korkeus)
     {
         pelaaja1 = new PlatformCharacter(leveys, korkeus);
@@ -169,5 +180,6 @@ public class game_2 : PhysicsGame
         viholline.Tag = "vihollinen";
         Add(viholline);
         pistelaskuri.AddValue(1);
+        AddCollisionHandler(viholline,Pelaajatormaa);
     }
 }
